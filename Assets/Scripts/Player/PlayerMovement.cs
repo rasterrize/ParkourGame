@@ -120,6 +120,10 @@ namespace Player
                 
             // Move camera down to emulate character sliding
             playerCamera.transform.localPosition = new Vector3(playerCamera.transform.localPosition.x, playerCamera.transform.localPosition.y - 0.5f, playerCamera.transform.localPosition.z);
+            
+            // Shrink player collider
+            controller.center = new Vector3(0, -0.5f, 0);
+            controller.height = 1;
         }
 
         private void EndSlide()
@@ -130,6 +134,10 @@ namespace Player
         
             // Reset camera
             playerCamera.transform.localPosition = new Vector3(playerCamera.transform.localPosition.x, playerCamera.transform.localPosition.y + 0.5f, playerCamera.transform.localPosition.z);
+            
+            // Reset player collider
+            controller.center = new Vector3(0, 0, 0);
+            controller.height = 2;
         }
 
         private void UpdateSlide()
