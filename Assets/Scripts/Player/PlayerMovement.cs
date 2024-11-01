@@ -19,6 +19,13 @@ namespace Player
     public class PlayerMovement : MonoBehaviour
     {
         private const float DEFAULT_GRAVITY = -9.81f;
+        private const float DEFAULT_WALK_SPEED = 4f;
+        private const float DEFAULT_RUN_SPEED = 8f;
+        private const float DEFAULT_JUMP_FORCE = 10f;
+        private const float DEFAULT_SLIDE_START_SPEED = 12f;
+        private const float DEFAULT_SLIDE_MAX_SPEED = 20f;
+        private const float DEFAULT_SLIDE_CAMERA_Y_DISTANCE = 0.5f;
+        private const float DEFAULT_WALL_RUN_SPEED = 8f;
 
         [SerializeField] private Camera playerCamera;
         [SerializeField] private GameObject groundCheckObject;
@@ -35,25 +42,25 @@ namespace Player
         [SerializeField] private float gravity = DEFAULT_GRAVITY;
         
         [Tooltip("The walking speed of the player.")]
-        [SerializeField] private float walkSpeed;
+        [SerializeField] private float walkSpeed = DEFAULT_WALK_SPEED;
         
         [Tooltip("The running speed of the player.")]
-        [SerializeField] private float runSpeed;
+        [SerializeField] private float runSpeed = DEFAULT_RUN_SPEED;
         
         [Tooltip("The amount of force to apply when the player jumps")]
-        [SerializeField] private float jumpForce;
+        [SerializeField] private float jumpForce = DEFAULT_JUMP_FORCE;
         
         [Tooltip("The speed at which sliding will start at.")]
-        [SerializeField] private float slideStartSpeed;
+        [SerializeField] private float slideStartSpeed = DEFAULT_SLIDE_START_SPEED;
         
         [Tooltip("The maximum speed the player can slide. Usually only reached when sliding downhill.")]
-        [SerializeField] private float maxSlideSpeed;
+        [SerializeField] private float maxSlideSpeed = DEFAULT_SLIDE_MAX_SPEED;
 
         [Tooltip("The distance to move the camera down on the y axis when the player slides.")]
-        [SerializeField] private float slideCameraYDistance;
+        [SerializeField] private float slideCameraYDistance = DEFAULT_SLIDE_CAMERA_Y_DISTANCE;
         
         [Tooltip("The speed at which the player will run on walls")]
-        [SerializeField] private float wallRunSpeed = 8.0f;
+        [SerializeField] private float wallRunSpeed = DEFAULT_WALL_RUN_SPEED;
         
         private float currentSlidePenalty;
         private float currentSlideVelocity;
@@ -66,6 +73,91 @@ namespace Player
         private bool isWallRunning;
 
         private MovementType currentMovementState;
+        
+        // --------
+        // Events
+        // --------
+        
+        /// <summary>
+        /// Occurs when the movement keys are pressed or the joystick is moved. Avoid expensive code when using this.
+        /// </summary>
+        public event EventHandler OnMoveActionEvent;
+        
+        /// <summary>
+        /// Occurs when the player moves. Avoid expensive code when using this.
+        /// </summary>
+        public event EventHandler OnMoveEvent;
+        
+        /// <summary>
+        /// Occurs when the player looks. Avoid expensive code when using this.
+        /// </summary>
+        public event EventHandler OnLookEvent;
+        
+        /// <summary>
+        /// Occurs when the jump button is pressed.
+        /// </summary>
+        public event EventHandler OnJumpActionEvent;
+        
+        /// <summary>
+        /// Occurs when the player jumps.
+        /// </summary>
+        public event EventHandler OnJumpEvent;
+        
+        /// <summary>
+        /// Occurs when the player lands on the ground.
+        /// </summary>
+        public event EventHandler OnLandEvent;
+        
+        /// <summary>
+        /// Occurs when the slide key is pressed.
+        /// </summary>
+        public event EventHandler OnSlideActionEvent;
+        
+        /// <summary>
+        /// Occurs when the player begins sliding.
+        /// </summary>
+        public event EventHandler OnSlideBeginEvent;
+        
+        /// <summary>
+        /// Occurs when the player stops sliding.
+        /// </summary>
+        public event EventHandler OnSlideEndEvent;
+        
+        /// <summary>
+        /// Occurs when the player presses the roll key.
+        /// </summary>
+        public event EventHandler OnRollActionEvent;
+        
+        /// <summary>
+        /// Occurs when the player begins rolling.
+        /// </summary>
+        public event EventHandler OnRollBeginEvent;
+        
+        /// <summary>
+        /// Occurs when the player stops rolling.
+        /// </summary>
+        public event EventHandler OnRollEndEvent;
+        
+        public MovementType GetMovementState() => currentMovementState;
+        public void SetMovementState(MovementType movement) => currentMovementState = movement;
+        
+        public float GetWalkSpeed() => walkSpeed;
+        public void SetWalkSpeed(float speed) => walkSpeed = speed;
+        
+        public float GetRunSpeed() => runSpeed;
+        public void SetRunSpeed(float speed) => runSpeed = speed;
+        
+        public float GetJumpForce() => jumpForce;
+        public void SetJumpForce(float force) => jumpForce = force;
+        
+        public float GetSlideStartSpeed() => slideStartSpeed;
+        public void SetSlideStartSpeed(float speed) => slideStartSpeed = speed;
+        
+        public float GetSlideMaxSpeed() => maxSlideSpeed;
+        public void SetSlideMaxSpeed(float speed) => maxSlideSpeed = speed;
+        
+        public float GetWallRunSpeed() => wallRunSpeed;
+        public void SetWallRunSpeed(float speed) => wallRunSpeed = speed;
 
         private void Start()
         {
@@ -76,12 +168,18 @@ namespace Player
         private void Update()
         {
             velocity.y -= gravity * -2f * Time.deltaTime;
+            var oldIsGrounded = IsGrounded;
             IsGrounded = Physics.CheckSphere(groundCheckObject.transform.position, groundCheckRadius, groundLayer);
             
             if (IsGrounded && velocity.y < 0)
             {
                 // Force the player to the ground
                 velocity.y = -2f;
+            }
+            
+            if (oldIsGrounded == false && IsGrounded)
+            {
+                OnLand();
             }
 
             wallRunController.RunWallChecks();
@@ -134,9 +232,16 @@ namespace Player
             var moveVector = Controller.transform.forward * inputs.y + Controller.transform.right * inputs.x;
             var currentSpeed = isHoldingSprintKey ? runSpeed : walkSpeed;
             Controller.Move(currentSpeed * Time.deltaTime * moveVector);
+            
+            OnMoveEvent?.Invoke(this, EventArgs.Empty);
         }
 
-        private void Jump()
+        public void OnLookAction(InputAction.CallbackContext context)
+        {
+            OnLookEvent?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void Jump()
         {
             if (currentMovementState == MovementType.Sliding)
                 EndSlide();
@@ -146,6 +251,8 @@ namespace Player
         
             currentMovementState = MovementType.Jumping;
             velocity.y = jumpForce;
+            
+            OnJumpEvent?.Invoke(this, EventArgs.Empty);
         }
 
         private void BeginSlide()
@@ -159,6 +266,8 @@ namespace Player
             // Shrink player collider
             Controller.center = new Vector3(0, -0.5f, 0);
             Controller.height = 1;
+            
+            OnSlideBeginEvent?.Invoke(this, EventArgs.Empty);
         }
 
         private void EndSlide()
@@ -172,6 +281,8 @@ namespace Player
             // Reset player collider
             Controller.center = new Vector3(0, 0, 0);
             Controller.height = 2;
+            
+            OnSlideEndEvent?.Invoke(this, EventArgs.Empty);
         }
 
         private void UpdateSlide()
@@ -196,6 +307,8 @@ namespace Player
         {
             // Update move values (x = left/right, y = forward/backward)
             moveInputs = context.ReadValue<Vector2>();
+            
+            OnMoveActionEvent?.Invoke(this, EventArgs.Empty);
         }
 
         public void OnSprintAction(InputAction.CallbackContext context)
@@ -219,6 +332,8 @@ namespace Player
                 wallRunController.EndWallRun();
                 Jump();
             }
+            
+            OnJumpActionEvent?.Invoke(this, EventArgs.Empty);
         }
 
         public void OnRollAction(InputAction.CallbackContext context)
@@ -226,6 +341,8 @@ namespace Player
             // if y velocity > certain value
             // check distance to the ground
             // roll if the distance is between a certain threshold
+            
+            OnRollActionEvent?.Invoke(this, EventArgs.Empty);
         }
 
         public void OnSlideAction(InputAction.CallbackContext context)
@@ -243,10 +360,13 @@ namespace Player
             {
                 BeginSlide();
             }
+            
+            OnSlideActionEvent?.Invoke(this, EventArgs.Empty);
         }
-        
-        public MovementType GetMovementState() => currentMovementState;
-        
-        public void SetMovementState(MovementType movement) => currentMovementState = movement;
+
+        private void OnLand()
+        {
+            OnLandEvent?.Invoke(this, EventArgs.Empty);
+        }
     }
 }
