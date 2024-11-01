@@ -46,7 +46,7 @@ namespace Player
         private Vector3 velocity;
         private Vector2 moveInputValues;
 
-        private MovementType currentMovementState;
+        public MovementType currentMovementState;
     
         //private bool allowMovement = true;
 
