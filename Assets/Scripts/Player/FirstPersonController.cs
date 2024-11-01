@@ -1,3 +1,4 @@
+using Player;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -7,8 +8,9 @@ public class FirstPersonController : MonoBehaviour
 
     [SerializeField] private Camera playerCamera;
     private Transform playerTransform;
-    private float mouseSensitivityHorizontal = DEFAULT_MOUSE_SENSITIVITY;
-    private float mouseSensitivityVertical = DEFAULT_MOUSE_SENSITIVITY;
+    [SerializeField] private float mouseSensitivityHorizontal = DEFAULT_MOUSE_SENSITIVITY;
+    [SerializeField] private float mouseSensitivityVertical = DEFAULT_MOUSE_SENSITIVITY;
+    
     private float xRotation;
 
     private bool allowLooking = true;
