@@ -26,14 +26,17 @@ public class PlayerAnimationTriggers : MonoBehaviour
         if (playerMovement.currentMovementState == MovementType.Running) { runningAnimation(true); }
         else { runningAnimation(false); }
         
-        if (playerMovement.currentMovementState == MovementType.Jumping) { jumpingAnimation(); }
+
 
         if (playerMovement.currentMovementState == MovementType.Sliding) { slidingAnimation(); }
+
+        //if (playerMovement.currentMovementState =- MovementType.WallRunning) { wallRunningAnimation(true); }
+        //else { wallRunningAnimation(false); }
     }
-    public void jumpingAnimation()
+    public void visibleArms(bool visible)
     {
-        leftArm.SetTrigger("Jump");
-        rightArm.SetTrigger("Jump");
+        leftArm.enabled = visible;
+      
     }
     public void runningAnimation(bool boolRun)
     {
@@ -49,5 +52,10 @@ public class PlayerAnimationTriggers : MonoBehaviour
     {
         leftArm.SetBool("Walking", boolRun);
         rightArm.SetBool("Walking", boolRun);
+    }
+    public void wallRunningAnimation(bool boolWallRun)
+    {
+        leftArm.SetBool("Wall Run", boolWallRun);
+        rightArm.SetBool("Wall Run", boolWallRun);
     }
 }
