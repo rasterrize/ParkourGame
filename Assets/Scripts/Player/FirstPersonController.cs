@@ -13,7 +13,7 @@ public class FirstPersonController : MonoBehaviour
     
     private float xRotation;
 
-    private bool allowLooking = true;
+    public bool AllowLooking = true;
 
     // Start is called before the first frame update
     private void Start()
@@ -26,7 +26,7 @@ public class FirstPersonController : MonoBehaviour
 
     public void OnLookAction(InputAction.CallbackContext context)
     {
-        if (!allowLooking)
+        if (!AllowLooking)
             return;
 
         // Get the mouse delta from the input context

@@ -2099,13 +2099,17 @@ MonoBehaviour:
   wallCheckLeft: {fileID: 652307116}
   wallCheckRight: {fileID: 1474476013}
   gravity: -9.81
-  walkSpeed: 4
-  runSpeed: 8
+  baseWalkSpeed: 4
+  baseRunSpeed: 8
   jumpForce: 10
   slideStartSpeed: 12
   maxSlideSpeed: 20
   slideCameraYDistance: 0.5
   wallRunSpeed: 8
+  highFallThreshold: -12
+  staggerTime: 1
+  staggerMovePercentage: 70
+  rollSpeed: 500
 --- !u!114 &1888122184
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2121,6 +2125,7 @@ MonoBehaviour:
   playerCamera: {fileID: 801720682}
   mouseSensitivityHorizontal: 0.1
   mouseSensitivityVertical: 0.1
+  AllowLooking: 1
 --- !u!114 &1888122185
 MonoBehaviour:
   m_ObjectHideFlags: 0
