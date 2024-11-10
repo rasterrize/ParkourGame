@@ -9,6 +9,7 @@ namespace Player
         private float experience;
         private uint cosmicCubes;
         
+        private Keychain keychain;
         private Charm testCharm;
         
         private PlayerMovement movement;
@@ -18,7 +19,9 @@ namespace Player
             movement = GetComponent<PlayerMovement>();
             
             testCharm = new DoubleJumpCharm(movement);
-            testCharm.Activate();
+            keychain = new Keychain();
+            keychain.SetCharm(1, testCharm);
+            keychain.Activate();
         }
 
         public Charm GetCharm()
