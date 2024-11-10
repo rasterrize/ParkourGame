@@ -1,28 +1,30 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BarMovementCheck : MonoBehaviour
 {
     public float speed = 100;
-    Transform left;
-    Transform right;
+    [SerializeField] GameObject left;
+    [SerializeField] GameObject right;
     [HideInInspector] public float dist;
     [SerializeField] PlayerRhythmController rhythmController;
     private void Start()
     {
-        left = transform.Find("leftBar");
-        
-        right = transform.Find("rightBar");
-
+        dist = Vector3.Distance(left.transform.position, right.transform.position);
         rhythmController = GameObject.Find("Player").GetComponent<PlayerRhythmController>();
-
+       
     }
     private void Update()
     {
         
-        if (dist <= 100) {  Debug.DrawLine(left.transform.position, right.transform.position, Color.red); }
-        else { Debug.DrawLine(left.transform.position, right.transform.position, Color.blue); }
+        if (dist <= rhythmController.distanceDetection) 
+        {
+            left.GetComponent<Image>().color = Color.red;
+            right.GetComponent<Image>().color = Color.red;
+        }
+       
 
         dist = Vector3.Distance(left.transform.position, right.transform.position);
         if (dist <=  25) 

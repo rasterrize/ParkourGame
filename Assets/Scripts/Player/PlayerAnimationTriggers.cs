@@ -20,16 +20,16 @@ public class PlayerAnimationTriggers : MonoBehaviour
     }
     private void Update()
     {
-        if (playerMovement.currentMovementState == MovementType.Walking) { walkingAnimation(true); }
-        else { walkingAnimation(false); }
+        //if (playerMovement.currentMovementState == MovementType.Walking) { walkingAnimation(true); }
+        //else { walkingAnimation(false); }
 
-        if (playerMovement.currentMovementState == MovementType.Running) { runningAnimation(true); }
-        else { runningAnimation(false); }
+        //if (playerMovement.currentMovementState == MovementType.Running) { runningAnimation(true); }
+        //else { runningAnimation(false); }
         
-        if (playerMovement.currentMovementState == MovementType.Sliding) { legs.SetActive(true); }
-        else { legs.SetActive(false); }
+        //if (playerMovement.currentMovementState == MovementType.Sliding) { legs.SetActive(true); }
+        //else { legs.SetActive(false); }
 
-        if (playerMovement.currentMovementState == MovementType.Sliding) { slidingAnimation(true); }
+        //if (playerMovement.currentMovementState == MovementType.Sliding) { slidingAnimation(true); }
         
 
         //if (playerMovement.currentMovementState =- MovementType.WallRunning) { wallRunningAnimation(true); }

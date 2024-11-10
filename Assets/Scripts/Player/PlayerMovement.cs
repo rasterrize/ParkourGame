@@ -170,6 +170,7 @@ namespace Player
 
         private void Update()
         {
+
             velocity.y -= gravity * -2f * Time.deltaTime;
             var oldIsGrounded = IsGrounded;
             IsGrounded = Physics.CheckSphere(groundCheckObject.transform.position, groundCheckRadius, groundLayer);
@@ -238,7 +239,6 @@ namespace Player
             
             OnMoveEvent?.Invoke(this, EventArgs.Empty);
         }
-
         public void OnLookAction(InputAction.CallbackContext context)
         {
             OnLookEvent?.Invoke(this, EventArgs.Empty);
@@ -347,7 +347,6 @@ namespace Player
             
             OnRollActionEvent?.Invoke(this, EventArgs.Empty);
         }
-
         public void OnSlideAction(InputAction.CallbackContext context)
         {
             if (currentMovementState is not MovementType.Running or MovementType.Sliding)
@@ -374,8 +373,10 @@ namespace Player
         }
         public void OnTrickAction(InputAction.CallbackContext context)
         {
-            OnLandEvent?.Invoke(this, EventArgs.Empty);
-            rhythmController.rhythmBarActivated(200f,100,2f);
+            if (context.started) { rhythmController.rhythmBarActivated(300f, 100, 2f); }
+            
+            //OnLandEvent?.Invoke(this, EventArgs.Empty);
+            
         }
     }
 }

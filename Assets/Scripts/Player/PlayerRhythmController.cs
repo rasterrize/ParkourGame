@@ -1,23 +1,19 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-
 using TMPro;
-using UnityEngine.UI;
-using UnityEngine.Rendering;
+using UnityEngine;
 
 public class PlayerRhythmController : MonoBehaviour
 {
-
     [Header("Rhythm Bar")]
     [SerializeField] private BarMovementCheck barObject;
     private BarMovementCheck barObjectCheck;
     [SerializeField] private GameObject rhythmBar;
-    [SerializeField] private int distanceDetection;
+    [SerializeField] public int distanceDetection;
 
     [Header("Score")]
     private int playerScore;
     [SerializeField] private TextMeshProUGUI scoreCounter;
+    [SerializeField] private TextMeshProUGUI scoreMultiper;
 
     [Header("Timer")]
     [SerializeField] GameObject timerObject;
@@ -28,11 +24,11 @@ public class PlayerRhythmController : MonoBehaviour
     private void Start()
     {
         Mathf.Clamp(playerScore, 0f, 999999f);
+        scoreMultiper.text = "x" + multiplerFunction().ToString();
     }
     private void Update()
     {
         updateTimer();
-        Debug.Log(playerTimer);
     }
     /// <summary>
     /// Detects the distance of the first set of rhythm bars.
@@ -43,7 +39,7 @@ public class PlayerRhythmController : MonoBehaviour
     /// <param name="inputScoreReward">Sets the value of the points after a successful activation</param>
     /// <param name="inputTimeReward">Sets the value of the time after a successful activation</param>
     public void rhythmBarActivated(float inputBarSpeed, float inputScoreReward, float inputTimeReward)
-    { 
+    {
         if (rhythmBarList.Count != 0)
         {
             if (rhythmBarList[0].GetComponent<BarMovementCheck>().dist < distanceDetection)
@@ -52,7 +48,7 @@ public class PlayerRhythmController : MonoBehaviour
                 Destroy(rhythmBarList[0].gameObject);
                 rhythmBarList.Remove(rhythmBarList[0]);
                 scoreUpdate(inputScoreReward * multiplerFunction(), inputTimeReward);
-            } 
+            }
             else
             {
                 // Destorys the current object for a new one to spawn, punishing the player
@@ -68,16 +64,18 @@ public class PlayerRhythmController : MonoBehaviour
     }
 
     public void scoreUpdate(float scoreAddition, float timeBonus)
-    { 
-        // Adding to the player score
+    {
+        // Adding to the player score & player multiplier
         playerScore += Mathf.RoundToInt(scoreAddition);
         scoreCounter.text = playerScore.ToString();
-        
+
+        scoreMultiper.text = "x" + multiplerFunction().ToString();
 
         // Adding Timer
-        playerTimer += timeBonus; 
+        playerTimer += timeBonus * multiplerFunction();
         if (playerTimer < 0) { playerTimer = 0; }
-        
+
+
     }
 
     void updateTimer()
@@ -85,13 +83,16 @@ public class PlayerRhythmController : MonoBehaviour
         timerScale = playerTimer / 10;
         if (playerTimer > 0.001f)
         {
-            playerTimer -= Time.deltaTime;
+            playerTimer -= Time.deltaTime * multiplerFunction();
         }
-        timerObject.transform.localScale = new Vector3(Mathf.Clamp(timerScale,0f,1f), 1, 1);
+        timerObject.transform.localScale = new Vector3(Mathf.Clamp(timerScale, 0f, 1f), 1, 1);
+
     }
     private int multiplerFunction()
-    {
+    {   //  Lower Parameter     Upper Parameter
+        if (timerScale >= 1 && timerScale < 1.5) { return 2; }
+        else if (timerScale >= 1.5 && timerScale < 2) { return 3; }
+        else { return 1; }
 
-        return 5;
     }
 }
