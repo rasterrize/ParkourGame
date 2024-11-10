@@ -73,7 +73,9 @@ namespace Player
         private bool isWallRunning;
 
         private MovementType currentMovementState;
-        
+
+        private PlayerRhythmController rhythmController;
+
         // --------
         // Events
         // --------
@@ -163,6 +165,7 @@ namespace Player
         {
             Controller = GetComponent<CharacterController>();
             wallRunController = new WallRunController(this, wallCheckLeft, wallCheckRight, parkourWallLayer, wallRunSpeed);
+            rhythmController = GetComponent<PlayerRhythmController>();
         }
 
         private void Update()
@@ -359,6 +362,7 @@ namespace Player
             if (context.started && IsGrounded && currentMovementState == MovementType.Running)
             {
                 BeginSlide();
+                rhythmController.rhythmBarActivated(100f, 100, 3f);
             }
             
             OnSlideActionEvent?.Invoke(this, EventArgs.Empty);
@@ -367,6 +371,11 @@ namespace Player
         private void OnLand()
         {
             OnLandEvent?.Invoke(this, EventArgs.Empty);
+        }
+        public void OnTrickAction(InputAction.CallbackContext context)
+        {
+            OnLandEvent?.Invoke(this, EventArgs.Empty);
+            rhythmController.rhythmBarActivated(200f,100,2f);
         }
     }
 }

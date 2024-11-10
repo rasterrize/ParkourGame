@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 422d0ddb77a0bd148b5b3e56bf099ef6
+guid: a3dcddc27f3051141aacd75fa026f186
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -9,7 +9,7 @@ TrueTypeFontImporter:
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - Panton Narrow-Trial
+  - FOT-NewRodin Pro
   fallbackFontReferences: []
   customCharacters: 
   fontRenderingMode: 0

@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!21 &-8785884489942655
+--- !u!21 &-2850085929670429202
 Material:
   serializedVersion: 8
   m_ObjectHideFlags: 0
@@ -36,7 +36,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 3388466739857393456}
+        m_Texture: {fileID: 1625432150116924172}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OutlineTex:
@@ -121,11 +121,11 @@ MonoBehaviour:
   m_Name: PANTONNARROW-TRIAL-BOLD SDF
   m_EditorClassIdentifier: 
   hashCode: 0
-  material: {fileID: -8785884489942655}
+  material: {fileID: -2850085929670429202}
   materialHashCode: 0
   m_Version: 1.1.0
-  m_SourceFontFileGUID: e2cca394c6240494cbe4a122e46c6cf4
-  m_SourceFontFile_EditorRef: {fileID: 12800000, guid: e2cca394c6240494cbe4a122e46c6cf4,
+  m_SourceFontFileGUID: 422d0ddb77a0bd148b5b3e56bf099ef6
+  m_SourceFontFile_EditorRef: {fileID: 12800000, guid: 422d0ddb77a0bd148b5b3e56bf099ef6,
     type: 3}
   m_SourceFontFile: {fileID: 0}
   m_AtlasPopulationMode: 0
@@ -1997,7 +1997,7 @@ MonoBehaviour:
     m_GlyphIndex: 456
     m_Scale: 1
   m_AtlasTextures:
-  - {fileID: 3388466739857393456}
+  - {fileID: 1625432150116924172}
   m_AtlasTextureIndex: 0
   m_IsMultiAtlasTexturesEnabled: 0
   m_ClearDynamicDataOnBuild: 0
@@ -2691,7 +2691,7 @@ MonoBehaviour:
   m_FallbackFontAssetTable: []
   m_CreationSettings:
     sourceFontFileName: 
-    sourceFontFileGUID: e2cca394c6240494cbe4a122e46c6cf4
+    sourceFontFileGUID: 422d0ddb77a0bd148b5b3e56bf099ef6
     pointSizeSamplingMode: 0
     pointSize: 75
     padding: 5
@@ -2734,7 +2734,7 @@ MonoBehaviour:
   boldSpacing: 7
   italicStyle: 35
   tabSize: 10
---- !u!28 &3388466739857393456
+--- !u!28 &1625432150116924172
 Texture2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
