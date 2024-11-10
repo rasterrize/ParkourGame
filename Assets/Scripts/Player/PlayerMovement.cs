@@ -1,42 +1,40 @@
 using System;
+using Player.States;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Player
 {
-    public enum MovementType
-    {
-        Idle,
-        Walking,
-        Running,
-        Jumping,
-        Rolling,
-        Sliding,
-        Vaulting,
-        WallRunning,
-    }
-
     public class PlayerMovement : MonoBehaviour
     {
         private const float DEFAULT_GRAVITY = -9.81f;
         private const float DEFAULT_WALK_SPEED = 4f;
         private const float DEFAULT_RUN_SPEED = 8f;
         private const float DEFAULT_JUMP_FORCE = 10f;
-        private const float DEFAULT_SLIDE_START_SPEED = 12f;
+        private const float DEFAULT_SLIDE_START_VELOCITY = 12f;
+        private const float DEFAULT_SLIDE_END_VELOCITY = 0f;
         private const float DEFAULT_SLIDE_MAX_SPEED = 20f;
         private const float DEFAULT_SLIDE_CAMERA_Y_DISTANCE = 0.5f;
         private const float DEFAULT_WALL_RUN_SPEED = 8f;
+        private const float DEFAULT_WALL_CHECK_DISTANCE = 0.1f;
 
         [SerializeField] private Camera playerCamera;
-        [SerializeField] private GameObject groundCheckObject;
-        [SerializeField] private float groundCheckRadius = 0.4f;
-        [SerializeField] private LayerMask groundLayer;
         [SerializeField] private LayerMask parkourWallLayer;
         [SerializeField] private GameObject wallCheckLeft;
         [SerializeField] private GameObject wallCheckRight;
 
         public bool IsGrounded { get; private set; }
-        public CharacterController Controller { get; private set; } // the character controller of the player
+        
+        // Custom ground check
+        private bool useCustomGroundCheck;
+        private CustomGroundCheck customGroundCheck;
+        
+        /// <summary>
+        /// The character controller of the player
+        /// </summary>
+        public CharacterController Controller { get; private set; }
+        
+        private FirstPersonController firstPersonController;
 
         [Tooltip("The gravity of the player. This defaults to earth's gravity.")] 
         [SerializeField] private float gravity = DEFAULT_GRAVITY;
@@ -51,7 +49,10 @@ namespace Player
         [SerializeField] private float jumpForce = DEFAULT_JUMP_FORCE;
         
         [Tooltip("The speed at which sliding will start at.")]
-        [SerializeField] private float slideStartSpeed = DEFAULT_SLIDE_START_SPEED;
+        [SerializeField] private float slideStartVelocity = DEFAULT_SLIDE_START_VELOCITY;
+        
+        [Tooltip("The speed at which sliding will end at automatically.")]
+        [SerializeField] private float slideEndVelocity = DEFAULT_SLIDE_END_VELOCITY;
         
         [Tooltip("The maximum speed the player can slide. Usually only reached when sliding downhill.")]
         [SerializeField] private float maxSlideSpeed = DEFAULT_SLIDE_MAX_SPEED;
@@ -62,17 +63,22 @@ namespace Player
         [Tooltip("The speed at which the player will run on walls")]
         [SerializeField] private float wallRunSpeed = DEFAULT_WALL_RUN_SPEED;
         
+        [Tooltip("The distance for player to wall checks to initiate mechanics such as wall running.")]
+        [SerializeField] private float wallCheckDistance = DEFAULT_WALL_CHECK_DISTANCE;
+        
         private float currentSlidePenalty;
         private float currentSlideVelocity;
-        private bool isHoldingSprintKey;
-        private Vector3 velocity;
+        public bool IsHoldingSprintKey { get; private set; }
+        private float yVelocity;
         private Vector2 moveInputs;
+        public bool ShouldHandleGravity { get; set; } = true;
 
-        private WallRunController wallRunController;
+        private MovementStateFactory movementStateFactory;
+        private MovementState currentMovementState;
 
-        private bool isWallRunning;
+        public bool WaitUntilFarFromWall { get; set; }
 
-        private MovementType currentMovementState;
+        [SerializeField] private string movementStateString;
 
         private PlayerRhythmController rhythmController;
 
@@ -86,9 +92,14 @@ namespace Player
         public event EventHandler OnMoveActionEvent;
         
         /// <summary>
-        /// Occurs when the player moves. Avoid expensive code when using this.
+        /// Occurs when the player moves horizontally. Avoid expensive code when using this.
         /// </summary>
         public event EventHandler OnMoveEvent;
+        
+        /// <summary>
+        /// Occurs when the player presses the sprint key.
+        /// </summary>
+        public event EventHandler OnSprintActionEvent;
         
         /// <summary>
         /// Occurs when the player looks. Avoid expensive code when using this.
@@ -139,9 +150,15 @@ namespace Player
         /// Occurs when the player stops rolling.
         /// </summary>
         public event EventHandler OnRollEndEvent;
+
+        public Camera GetPlayerCamera() => playerCamera;
         
-        public MovementType GetMovementState() => currentMovementState;
-        public void SetMovementState(MovementType movement) => currentMovementState = movement;
+        public Vector2 GetMoveInputs() => moveInputs;
+
+        public MovementStateFactory GetStateFactory() => movementStateFactory;
+        
+        public float GetYVelocity() => yVelocity;
+        public void SetYVelocity(float velocity) => yVelocity = velocity;
         
         public float GetWalkSpeed() => walkSpeed;
         public void SetWalkSpeed(float speed) => walkSpeed = speed;
@@ -152,11 +169,13 @@ namespace Player
         public float GetJumpForce() => jumpForce;
         public void SetJumpForce(float force) => jumpForce = force;
         
-        public float GetSlideStartSpeed() => slideStartSpeed;
-        public void SetSlideStartSpeed(float speed) => slideStartSpeed = speed;
+        public float GetSlideStartSpeed() => slideStartVelocity;
+        public void SetSlideStartSpeed(float speed) => slideStartVelocity = speed;
         
         public float GetSlideMaxSpeed() => maxSlideSpeed;
         public void SetSlideMaxSpeed(float speed) => maxSlideSpeed = speed;
+        
+        public float GetSlideCameraYDistance() => slideCameraYDistance; 
         
         public float GetWallRunSpeed() => wallRunSpeed;
         public void SetWallRunSpeed(float speed) => wallRunSpeed = speed;
@@ -164,146 +183,91 @@ namespace Player
         private void Start()
         {
             Controller = GetComponent<CharacterController>();
-            wallRunController = new WallRunController(this, wallCheckLeft, wallCheckRight, parkourWallLayer, wallRunSpeed);
+            firstPersonController = GetComponent<FirstPersonController>();
+            customGroundCheck = GetComponent<CustomGroundCheck>();
+
+            movementStateFactory = new MovementStateFactory(this);
+            currentMovementState = movementStateFactory.NewIdleState();
+            currentMovementState.OnEnter();
+            
+            // Use custom ground check if it exists.
+            if (customGroundCheck != null)
+                useCustomGroundCheck = true;
+            
             rhythmController = GetComponent<PlayerRhythmController>();
         }
 
         private void Update()
         {
+            RunGroundedCheck();
 
-            velocity.y -= gravity * -2f * Time.deltaTime;
+            RunWallChecks();
+            
+            currentMovementState.OnUpdate();
+
+            if (ShouldHandleGravity)
+                HandleGravity();
+
+            movementStateString = currentMovementState.GetType().ToString();
+        }
+
+        private void RunGroundedCheck()
+        {
+            // Check if we are currently grounded
             var oldIsGrounded = IsGrounded;
-            IsGrounded = Physics.CheckSphere(groundCheckObject.transform.position, groundCheckRadius, groundLayer);
+            IsGrounded = useCustomGroundCheck ? customGroundCheck.IsGrounded() : Controller.isGrounded;
             
-            if (IsGrounded && velocity.y < 0)
-            {
-                // Force the player to the ground
-                velocity.y = -2f;
-            }
-            
+            // Check if the player has just landed on the ground
             if (oldIsGrounded == false && IsGrounded)
-            {
                 OnLand();
-            }
+        }
 
-            wallRunController.RunWallChecks();
-        
-            // Check if the player is trying to move or not
-            if (moveInputs == Vector2.zero)
-                currentMovementState = MovementType.Idle;
-            
-            // Update based on movement state
-            switch (currentMovementState)
+        public bool RunWallChecks()
+        {
+            // Left Wall Check
+            if (Physics.Raycast(wallCheckLeft.transform.position, -wallCheckLeft.transform.right, out var hit, wallCheckDistance, parkourWallLayer))
             {
-                case MovementType.Idle:
-                    if (moveInputs != Vector2.zero)
-                        Move(moveInputs);
-                    break;
-                case MovementType.Walking:
-                    Move(moveInputs);
-                    break;
-                case MovementType.Running:
-                    Move(moveInputs);
-                    break;
-                case MovementType.Jumping:
-                    Move(moveInputs);
-                    break;
-                case MovementType.Sliding:
-                    UpdateSlide();
-                    break;
-                case MovementType.Rolling:
-                    break;
-                case MovementType.Vaulting:
-                    break;
-                case MovementType.WallRunning:
-                    wallRunController.Update(moveInputs);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                if (currentMovementState.GetType() != typeof(WallRunState) && !WaitUntilFarFromWall)
+                    SwitchState(movementStateFactory.NewWallRunState(hit, WallRunSide.Left));
+
+                return true;
             }
             
-            // Move player using gravity
-            if (currentMovementState != MovementType.WallRunning)
-                Controller.Move(velocity * Time.deltaTime);
-        }
-
-        private void Move(Vector2 inputs)
-        {
-            // Check if the player is holding sprint
-            currentMovementState =  isHoldingSprintKey ? MovementType.Running : MovementType.Walking;
-        
-            // Move the player in the direction they are facing
-            var moveVector = Controller.transform.forward * inputs.y + Controller.transform.right * inputs.x;
-            var currentSpeed = isHoldingSprintKey ? runSpeed : walkSpeed;
-            Controller.Move(currentSpeed * Time.deltaTime * moveVector);
-            
-            OnMoveEvent?.Invoke(this, EventArgs.Empty);
-        }
-        public void OnLookAction(InputAction.CallbackContext context)
-        {
-            OnLookEvent?.Invoke(this, EventArgs.Empty);
-        }
-
-        public void Jump()
-        {
-            if (currentMovementState == MovementType.Sliding)
-                EndSlide();
-            
-            if (currentMovementState == MovementType.WallRunning)
-                wallRunController.EndWallRun();
-        
-            currentMovementState = MovementType.Jumping;
-            velocity.y = jumpForce;
-            
-            OnJumpEvent?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void BeginSlide()
-        {
-            currentMovementState = MovementType.Sliding;
-            currentSlideVelocity = slideStartSpeed;
+            // Right Wall Check
+            if (Physics.Raycast(wallCheckRight.transform.position, wallCheckRight.transform.right, out var hit2, wallCheckDistance, parkourWallLayer))
+            {
+                if (currentMovementState.GetType() != typeof(WallRunState) && !WaitUntilFarFromWall)
+                    SwitchState(movementStateFactory.NewWallRunState(hit2, WallRunSide.Right));
                 
-            // Move camera down to emulate character sliding
-            playerCamera.transform.localPosition = new Vector3(0, playerCamera.transform.localPosition.y - slideCameraYDistance, 0);
-            
-            // Shrink player collider
-            Controller.center = new Vector3(0, -0.5f, 0);
-            Controller.height = 1;
-            
-            OnSlideBeginEvent?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void EndSlide()
-        {
-            currentSlideVelocity = 0.0f;
-            currentMovementState = MovementType.Idle;
-        
-            // Reset camera
-            playerCamera.transform.localPosition = new Vector3(0, 0.5f, 0);
-            
-            // Reset player collider
-            Controller.center = new Vector3(0, 0, 0);
-            Controller.height = 2;
-            
-            OnSlideEndEvent?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void UpdateSlide()
-        {
-            if (moveInputs.y <= 0.0f)
-            {
-                EndSlide();
-                return;
+                return true;
             }
             
-            if (currentSlideVelocity <= 0.0f)
-            {
-                EndSlide();
-                return;
-            }
-        
-            currentSlideVelocity -= 10.0f * Time.deltaTime;
-            Controller.Move(Controller.transform.forward * (currentSlideVelocity * Time.deltaTime));
+            WaitUntilFarFromWall = false;
+
+            return false;
+        }
+
+        private void HandleGravity()
+        {
+            // Apply gravity if we aren't on the ground
+            if (!IsGrounded)
+                yVelocity -= gravity * -2f * Time.deltaTime;
+            
+            // Force the player to the ground
+            if (IsGrounded && yVelocity < 0)
+                yVelocity = -2f;
+            
+            // TODO: Automatically set player state to falling when the velocity is less than high fall threshold
+            
+            // Move the player using gravity
+            Controller.Move(new Vector3(0, yVelocity, 0) * Time.deltaTime);
+        }
+
+        public void SwitchState(MovementState newState)
+        {
+            currentMovementState.OnExit();
+            currentMovementState = newState;
+            currentMovementState.OnEnter();
         }
         
         public void OnMoveAction(InputAction.CallbackContext context)
@@ -316,7 +280,10 @@ namespace Player
 
         public void OnSprintAction(InputAction.CallbackContext context)
         {
-            isHoldingSprintKey = context.performed;
+            IsHoldingSprintKey = context.performed;
+            
+            if (context.performed)
+                OnSprintActionEvent?.Invoke(this, EventArgs.Empty);
         }
 
         public void OnJumpAction(InputAction.CallbackContext context)
@@ -324,17 +291,9 @@ namespace Player
             if (!context.performed)
                 return;
             
-            // Check if in correct state to jump
-            if (currentMovementState is MovementType.Idle or MovementType.Walking or MovementType.Running or MovementType.Sliding && IsGrounded)
-            {
-                Jump();
-            }
-
-            if (currentMovementState == MovementType.WallRunning)
-            {
-                wallRunController.EndWallRun();
-                Jump();
-            }
+            // We jump regardless of the current movement state
+            if (IsGrounded)
+                SwitchState(movementStateFactory.NewJumpState());
             
             OnJumpActionEvent?.Invoke(this, EventArgs.Empty);
         }
@@ -347,36 +306,48 @@ namespace Player
             
             OnRollActionEvent?.Invoke(this, EventArgs.Empty);
         }
+
         public void OnSlideAction(InputAction.CallbackContext context)
         {
-            if (currentMovementState is not MovementType.Running or MovementType.Sliding)
-                return;
-            
-            if (context.canceled)
-            {
-                if (currentMovementState == MovementType.Sliding)
-                    EndSlide();
-            }
-            
-            if (context.started && IsGrounded && currentMovementState == MovementType.Running)
-            {
-                BeginSlide();
-                rhythmController.rhythmBarActivated(100f, 100, 3f);
-            }
-            
             OnSlideActionEvent?.Invoke(this, EventArgs.Empty);
+            
+            rhythmController?.rhythmBarActivated(100f, 100, 3f);
         }
 
         private void OnLand()
         {
             OnLandEvent?.Invoke(this, EventArgs.Empty);
         }
+        
         public void OnTrickAction(InputAction.CallbackContext context)
         {
-            if (context.started) { rhythmController.rhythmBarActivated(300f, 100, 2f); }
-            
-            //OnLandEvent?.Invoke(this, EventArgs.Empty);
-            
+            if (context.started)
+                rhythmController?.rhythmBarActivated(300f, 100, 2f);
+        }
+
+        public void OnJump()
+        {
+            OnJumpEvent?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void OnSlideBegin()
+        {
+            OnSlideBeginEvent?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void OnSlideEnd()
+        {
+            OnSlideEndEvent?.Invoke(this, EventArgs.Empty);   
+        }
+
+        public void OnMove()
+        {
+            OnMoveEvent?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void OnLook()
+        {
+            OnLookEvent?.Invoke(this, EventArgs.Empty);
         }
     }
 }

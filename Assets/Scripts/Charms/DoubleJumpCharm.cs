@@ -1,5 +1,6 @@
 using System;
 using Player;
+using Player.States;
 
 namespace Charms
 {
@@ -30,8 +31,8 @@ namespace Charms
         {
             if (!jumpAvailable || playerMovement.IsGrounded)
                 return;
-            
-            playerMovement.Jump();
+
+            playerMovement.SwitchState(playerMovement.GetStateFactory().NewJumpState());
             jumpAvailable = false;
         }
 

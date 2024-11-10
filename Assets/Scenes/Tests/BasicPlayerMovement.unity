@@ -572,7 +572,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &522923401
 Transform:
   m_ObjectHideFlags: 0
@@ -582,7 +582,7 @@ Transform:
   m_GameObject: {fileID: 522923400}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.000000098533135, y: -1, z: 0.000000055597916}
+  m_LocalPosition: {x: 0, y: -0.6, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -721,11 +721,11 @@ Transform:
   m_GameObject: {fileID: 537388639}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -0, y: 0.5, z: 0.45}
+  m_LocalPosition: {x: 0, y: 0, z: 0.45}
   m_LocalScale: {x: 0.4, y: 0.3, z: 0.7}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1888122182}
+  m_Father: {fileID: 801720679}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &537388641
 BoxCollider:
@@ -1173,11 +1173,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 801720678}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 537388640}
   m_Father: {fileID: 1888122182}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &801720680
@@ -2064,7 +2065,7 @@ Transform:
   m_GameObject: {fileID: 1888122181}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalPosition: {x: 0, y: 1.77, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2073,7 +2074,6 @@ Transform:
   - {fileID: 522923401}
   - {fileID: 652307117}
   - {fileID: 1474476014}
-  - {fileID: 537388640}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
 --- !u!114 &1888122183
@@ -2089,11 +2089,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerCamera: {fileID: 801720682}
-  groundCheckObject: {fileID: 522923400}
-  groundCheckRadius: 0.2
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 1
   parkourWallLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -2103,10 +2098,13 @@ MonoBehaviour:
   walkSpeed: 4
   runSpeed: 8
   jumpForce: 10
-  slideStartSpeed: 12
+  slideStartVelocity: 12
+  slideEndVelocity: 0
   maxSlideSpeed: 20
   slideCameraYDistance: 0.5
   wallRunSpeed: 8
+  wallCheckDistance: 0.1
+  movementStateString: 
 --- !u!114 &1888122184
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2122,6 +2120,8 @@ MonoBehaviour:
   playerCamera: {fileID: 801720682}
   mouseSensitivityHorizontal: 0.1
   mouseSensitivityVertical: 0.1
+  XRotationMinClamp: -90
+  XRotationMaxClamp: 90
 --- !u!114 &1888122185
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2168,18 +2168,6 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1888122184}
         m_TargetAssemblyTypeName: FirstPersonController, Assembly-CSharp
-        m_MethodName: OnLookAction
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 1888122183}
-        m_TargetAssemblyTypeName: Player.PlayerMovement, Assembly-CSharp
         m_MethodName: OnLookAction
         m_Mode: 0
         m_Arguments:
@@ -2256,6 +2244,10 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 8ec7cb5e-41c4-4211-bad1-d5c071add456
     m_ActionName: Player Movement/Slide[/Keyboard/c,/Keyboard/ctrl]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: c1d82cac-47b4-4f2e-ad1f-74d5210c0489
+    m_ActionName: Player Movement/Trick[/Keyboard/v]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player Movement
