@@ -27,7 +27,7 @@ namespace Charms
             playerMovement.OnLandEvent -= OnLand;
         }
         
-        public override void OnJumpActionEvent(object sender, EventArgs e)
+        private void OnJumpActionEvent(object sender, EventArgs e)
         {
             if (!jumpAvailable || playerMovement.IsGrounded)
                 return;
@@ -36,7 +36,7 @@ namespace Charms
             jumpAvailable = false;
         }
 
-        public override void OnLand(object sender, EventArgs e)
+        private void OnLand(object sender, EventArgs e)
         {
             jumpAvailable = true;
         }

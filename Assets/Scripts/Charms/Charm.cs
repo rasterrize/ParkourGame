@@ -25,14 +25,14 @@ namespace Charms
                Description = description;
           }
 
-          // Enable the charm's ability
+          /// <summary>
+          /// Enables the charm's abilities
+          /// </summary>
           public abstract void Activate();
 
-          // Disable the charm's ability
+          /// <summary>
+          /// Deactivates the charm's abilities
+          /// </summary>
           public abstract void Deactivate();
-
-          public abstract void OnJumpActionEvent(object sender, EventArgs e);
-
-          public abstract void OnLand(object sender, EventArgs e);
      }
 }

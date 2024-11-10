@@ -43,7 +43,7 @@
         public void Activate()
         {
             foreach (var charm in charms)
-                charm.Activate();
+                charm?.Activate();
         }
         
         /// <summary>
@@ -52,7 +52,7 @@
         public void Deactivate()
         {
             foreach (var charm in charms)
-                charm.Deactivate();
+                charm?.Deactivate();
         }
     
         /// <summary>
