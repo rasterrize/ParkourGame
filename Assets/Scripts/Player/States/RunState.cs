@@ -12,7 +12,7 @@ namespace Player.States
 
         public override void OnEnter()
         {
-            Movement.OnSlideActionEvent += OnSlideAction;
+            Movement.OnSlideActionPressEvent += OnSlideActionPress;
         }
 
         public override void OnUpdate()
@@ -28,10 +28,10 @@ namespace Player.States
 
         public override void OnExit()
         {
-            Movement.OnSlideActionEvent -= OnSlideAction;
+            Movement.OnSlideActionPressEvent -= OnSlideActionPress;
         }
 
-        private void OnSlideAction(object sender, EventArgs e)
+        private void OnSlideActionPress(object sender, EventArgs e)
         {
             Movement.SwitchState(Factory.NewSlideState());
         }

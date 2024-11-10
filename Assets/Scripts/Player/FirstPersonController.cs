@@ -22,6 +22,8 @@ public class FirstPersonController : MonoBehaviour
     private bool allowLooking = true;
     
     private PlayerMovement playerMovement;
+    
+    public Camera GetCamera() => playerCamera;
 
     // Start is called before the first frame update
     private void Start()

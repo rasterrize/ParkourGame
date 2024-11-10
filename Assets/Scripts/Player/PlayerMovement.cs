@@ -15,6 +15,7 @@ namespace Player
         private const float DEFAULT_SLIDE_END_VELOCITY = 0f;
         private const float DEFAULT_SLIDE_MAX_SPEED = 20f;
         private const float DEFAULT_SLIDE_CAMERA_Y_DISTANCE = 0.5f;
+        private const float DEFAULT_SLIDE_PENALTY_MULTIPLIER = 5.0f;
         private const float DEFAULT_WALL_RUN_SPEED = 8f;
         private const float DEFAULT_WALL_CHECK_DISTANCE = 0.1f;
 
@@ -60,14 +61,15 @@ namespace Player
         [Tooltip("The distance to move the camera down on the y axis when the player slides.")]
         [SerializeField] private float slideCameraYDistance = DEFAULT_SLIDE_CAMERA_Y_DISTANCE;
         
+        [Tooltip("The penalty multiplier for consecutive slides.")]
+        [SerializeField] private float slidePenaltyMultiplier = DEFAULT_SLIDE_PENALTY_MULTIPLIER;
+        
         [Tooltip("The speed at which the player will run on walls")]
         [SerializeField] private float wallRunSpeed = DEFAULT_WALL_RUN_SPEED;
         
         [Tooltip("The distance for player to wall checks to initiate mechanics such as wall running.")]
         [SerializeField] private float wallCheckDistance = DEFAULT_WALL_CHECK_DISTANCE;
         
-        private float currentSlidePenalty;
-        private float currentSlideVelocity;
         public bool IsHoldingSprintKey { get; private set; }
         private float yVelocity;
         private Vector2 moveInputs;
@@ -81,6 +83,8 @@ namespace Player
         [SerializeField] private string movementStateString;
 
         private PlayerRhythmController rhythmController;
+
+        private float currentSlidePenalty;
 
         // --------
         // Events
@@ -124,7 +128,12 @@ namespace Player
         /// <summary>
         /// Occurs when the slide key is pressed.
         /// </summary>
-        public event EventHandler OnSlideActionEvent;
+        public event EventHandler OnSlideActionPressEvent;
+        
+        /// <summary>
+        /// Occurs when the slide key is released.
+        /// </summary>
+        public event EventHandler OnSlideActionReleaseEvent;
         
         /// <summary>
         /// Occurs when the player begins sliding.
@@ -151,7 +160,7 @@ namespace Player
         /// </summary>
         public event EventHandler OnRollEndEvent;
 
-        public Camera GetPlayerCamera() => playerCamera;
+        public FirstPersonController GetFirstPersonController() => firstPersonController;
         
         public Vector2 GetMoveInputs() => moveInputs;
 
@@ -175,7 +184,11 @@ namespace Player
         public float GetSlideMaxSpeed() => maxSlideSpeed;
         public void SetSlideMaxSpeed(float speed) => maxSlideSpeed = speed;
         
-        public float GetSlideCameraYDistance() => slideCameraYDistance; 
+        public float GetSlideCameraYDistance() => slideCameraYDistance;
+
+        public float GetSlidePenaltyMultiplier() => slidePenaltyMultiplier;
+        public float GetCurrentSlidePenalty() => currentSlidePenalty;
+        public float SetCurrentSlidePenalty(float penalty) => currentSlidePenalty = penalty;
         
         public float GetWallRunSpeed() => wallRunSpeed;
         public void SetWallRunSpeed(float speed) => wallRunSpeed = speed;
@@ -202,6 +215,8 @@ namespace Player
             RunGroundedCheck();
 
             RunWallChecks();
+            
+            ReduceSlidePenalty();
             
             currentMovementState.OnUpdate();
 
@@ -269,6 +284,12 @@ namespace Player
             currentMovementState = newState;
             currentMovementState.OnEnter();
         }
+
+        private void ReduceSlidePenalty()
+        {
+            currentSlidePenalty -= 1.0f * Time.deltaTime;
+            currentSlidePenalty = Mathf.Max(0.0f, currentSlidePenalty);
+        }
         
         public void OnMoveAction(InputAction.CallbackContext context)
         {
@@ -309,7 +330,10 @@ namespace Player
 
         public void OnSlideAction(InputAction.CallbackContext context)
         {
-            OnSlideActionEvent?.Invoke(this, EventArgs.Empty);
+            if (context.performed)
+                OnSlideActionPressEvent?.Invoke(this, EventArgs.Empty);
+            else if (context.canceled)
+                OnSlideActionReleaseEvent?.Invoke(this, EventArgs.Empty);
             
             rhythmController?.rhythmBarActivated(100f, 100, 3f);
         }
