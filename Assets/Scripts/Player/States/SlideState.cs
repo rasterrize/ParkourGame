@@ -34,16 +34,30 @@ namespace Player.States
         {
             var inputs = Movement.GetMoveInputs();
         
+            // Stop sliding if the player isn't holding the forward key or the slide velocity has run out.
             if (inputs.y <= 0.0f || currentSlideVelocity <= 0.0f)
             {
                 Movement.SwitchState(Factory.NewInputBasedGroundState());
                 return;
             }
 
-            var inclineVelocityIncrease = Math.Max(0.0f, -Movement.GetYVelocity());
+            var controller = Movement.Controller;
             
+            var groundCheck = Movement.GetGroundCheckObject();
+            var forwardDirection = controller.transform.forward;
+            
+            // Get the direction of the ground so we can decide to speed up or slow down the slide.
+            if (Physics.Raycast(groundCheck.transform.position, Vector3.down, out var hit, 1.0f, Physics.AllLayers))
+                forwardDirection = Vector3.Cross(controller.transform.right, hit.normal);
+            
+            // if the slope goes downhill, increase the velocity
+            if (forwardDirection.y < -0.1f)
+                currentSlideVelocity += 15.0f * Time.deltaTime;
+                        
+            charController.Move(forwardDirection * (currentSlideVelocity * Time.deltaTime));
+            
+            // Reduce slide velocity to simulate friction
             currentSlideVelocity -= 10.0f * Time.deltaTime;
-            charController.Move(charController.transform.forward * (currentSlideVelocity * Time.deltaTime));
             
             Movement.OnMove();
         }
@@ -67,6 +81,9 @@ namespace Player.States
             charController.center = new Vector3(0, -0.5f, 0);
             charController.height = 1;
             
+            // Lock player camera rotation
+            firstPersonController.XRotationMaxClamp = 60.0f;
+            
             Movement.OnSlideBegin();
         }
 
@@ -80,6 +97,9 @@ namespace Player.States
             // Reset player collider
             charController.center = new Vector3(0, 0, 0);
             charController.height = 2;
+            
+            // Reset player camera rotation
+            firstPersonController.ResetXRotationClamps();
             
             Movement.OnSlideEnd();
         }

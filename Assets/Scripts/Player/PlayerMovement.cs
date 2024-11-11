@@ -29,6 +29,8 @@ namespace Player
         // Custom ground check
         private bool useCustomGroundCheck;
         private CustomGroundCheck customGroundCheck;
+
+        [SerializeField] private GameObject groundCheck;
         
         /// <summary>
         /// The character controller of the player
@@ -85,7 +87,9 @@ namespace Player
         private PlayerRhythmController rhythmController;
 
         private float currentSlidePenalty;
-
+        
+        #region Events
+        
         // --------
         // Events
         // --------
@@ -159,6 +163,8 @@ namespace Player
         /// Occurs when the player stops rolling.
         /// </summary>
         public event EventHandler OnRollEndEvent;
+        
+        #endregion
 
         public FirstPersonController GetFirstPersonController() => firstPersonController;
         
@@ -264,9 +270,8 @@ namespace Player
 
         private void HandleGravity()
         {
-            // Apply gravity if we aren't on the ground
-            if (!IsGrounded)
-                yVelocity -= gravity * -2f * Time.deltaTime;
+            // Constantly apply gravity
+            yVelocity -= gravity * -2f * Time.deltaTime;
             
             // Force the player to the ground
             if (IsGrounded && yVelocity < 0)
@@ -275,7 +280,7 @@ namespace Player
             // TODO: Automatically set player state to falling when the velocity is less than high fall threshold
             
             // Move the player using gravity
-            Controller.Move(new Vector3(0, yVelocity, 0) * Time.deltaTime);
+            Controller.Move(Vector3.up * (yVelocity * Time.deltaTime));
         }
 
         public void SwitchState(MovementState newState)
@@ -372,6 +377,11 @@ namespace Player
         public void OnLook()
         {
             OnLookEvent?.Invoke(this, EventArgs.Empty);
+        }
+
+        public GameObject GetGroundCheckObject()
+        {
+            return groundCheck;
         }
     }
 }

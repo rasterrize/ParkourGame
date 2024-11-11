@@ -30,10 +30,22 @@ namespace Player.States
 
         private void Move()
         {
+            var controller = Movement.Controller;
             var inputs = Movement.GetMoveInputs();
             var speed = Movement.GetWalkSpeed();
-            var controller = Movement.Controller;
-            var moveVector = controller.transform.forward * inputs.y + controller.transform.right * inputs.x;
+            
+            var groundCheck = Movement.GetGroundCheckObject();
+            var forwardDirection = controller.transform.forward;
+            var rightDirection = controller.transform.right;
+            
+            // Get the direction of the ground to account for slopes when moving.
+            if (Physics.Raycast(groundCheck.transform.position, Vector3.down, out var hit, 1.0f, Physics.AllLayers))
+            {
+                forwardDirection = Vector3.Cross(controller.transform.right, hit.normal);
+                rightDirection = Vector3.Cross(-controller.transform.forward, hit.normal);
+            }
+            
+            var moveVector = forwardDirection * inputs.y + rightDirection * inputs.x;
             
             Movement.Controller.Move(speed * Time.deltaTime * moveVector);
 

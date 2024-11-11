@@ -24,6 +24,7 @@ namespace Player
             keychain.Activate();
         }
 
+        // TODO: remove
         public Charm GetCharm()
         {
             return testCharm;
