@@ -1,29 +1,17 @@
-using JetBrains.Annotations;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using Unity.UI;
-using UnityEngine.UIElements;
-using UnityEngine.Rendering;
+
 public class RhythmBarScript : MonoBehaviour
 {
-    [Header("Bar Set Up")]
-    [SerializeField] BarMovementCheck barObject;
-    BarMovementCheck barObjectCheck;
+    [Header("Bar Set Up")] [SerializeField]
+    private BarMovementCheck barObject;
 
-    [Header("Timer")]
-    [SerializeField] GameObject timerObject;
+    [Header("Timer")] [SerializeField] private GameObject timerObject;
 
-    private void Update()
-    {
-        
-      
-    }
-    public void rhythmBarActivated(float inputBarSpeed)
+    private BarMovementCheck barObjectCheck;
+
+    public void RhythmBarActivated(float inputBarSpeed)
     {
         barObjectCheck = Instantiate(barObject, transform);
         barObjectCheck.speed = inputBarSpeed;
     }
-
 }

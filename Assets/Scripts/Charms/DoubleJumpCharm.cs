@@ -1,6 +1,5 @@
-using System;
 using Player;
-using Player.States;
+using System;
 
 namespace Charms
 {
@@ -26,7 +25,7 @@ namespace Charms
             playerMovement.OnJumpActionEvent -= OnJumpActionEvent;
             playerMovement.OnLandEvent -= OnLand;
         }
-        
+
         private void OnJumpActionEvent(object sender, EventArgs e)
         {
             if (!jumpAvailable || playerMovement.IsGrounded)
@@ -40,5 +39,5 @@ namespace Charms
         {
             jumpAvailable = true;
         }
-    } 
+    }
 }

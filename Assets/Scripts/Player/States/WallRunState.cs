@@ -8,15 +8,16 @@ namespace Player.States
         Left,
         Right
     }
-    
+
     public class WallRunState : MovementState
     {
         private RaycastHit startHit;
         private WallRunSide startSide;
 
         private Vector3 wallRunDirectionNormal;
-        
-        public WallRunState(PlayerMovement movement, MovementStateFactory factory, RaycastHit wallHit, WallRunSide wallRunSide)
+
+        public WallRunState(PlayerMovement movement, MovementStateFactory factory, RaycastHit wallHit,
+            WallRunSide wallRunSide)
             : base(movement, factory)
         {
             startHit = wallHit;
@@ -26,27 +27,27 @@ namespace Player.States
         public override void OnEnter()
         {
             Movement.ShouldHandleGravity = false;
-            
+
             Movement.OnJumpActionEvent += OnJumpAction;
-            
+
             CalculateWallRunDirection(startSide, startHit);
         }
 
         public override void OnUpdate()
         {
-            var inputs = Movement.GetMoveInputs();
-            
+            Vector2 inputs = Movement.GetMoveInputs();
+
             if (!Movement.RunWallChecks() || inputs.y <= 0.0f)
                 Movement.SwitchState(Factory.NewFallState());
-            
+
             // Move player in the direction of the wall run
-            Movement.Controller.Move(wallRunDirectionNormal * (Movement.GetWallRunSpeed() * Time.deltaTime));
+            Movement.CharController.Move(wallRunDirectionNormal * (Movement.GetWallRunSpeed() * Time.deltaTime));
         }
 
         public override void OnExit()
         {
             Movement.ShouldHandleGravity = true;
-            
+
             Movement.OnJumpActionEvent -= OnJumpAction;
         }
 
@@ -54,7 +55,7 @@ namespace Player.States
         {
             // Manually make the player jump since the PlayerMovement version checks for IsGrounded
             Movement.SwitchState(Factory.NewJumpState());
-            
+
             // Tell PlayerMovement to wait until we are far from the wall before wall running again
             Movement.WaitUntilFarFromWall = true;
         }
@@ -73,4 +74,3 @@ namespace Player.States
         }
     }
 }
-

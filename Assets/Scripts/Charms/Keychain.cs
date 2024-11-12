@@ -9,7 +9,7 @@
         private const uint DEFAULT_CHARM_LIMIT = 3;
         private Charm[] charms;
         private uint charmSlotCount = DEFAULT_CHARM_LIMIT;
-        
+
         /// <summary>
         /// Create a keychain with the default charm limit: <see cref="DEFAULT_CHARM_LIMIT"/>
         /// </summary>
@@ -17,7 +17,7 @@
         {
             charms = new Charm[charmSlotCount];
         }
-        
+
         /// <summary>
         /// Create a keychain with a specific number of slots
         /// </summary>
@@ -27,7 +27,7 @@
             charms = new Charm[numCharmSlots];
             charmSlotCount = numCharmSlots;
         }
-        
+
         /// <summary>
         /// Create a keychain using an existing array of charms
         /// </summary>
@@ -42,19 +42,19 @@
         /// </summary>
         public void Activate()
         {
-            foreach (var charm in charms)
+            foreach (Charm charm in charms)
                 charm?.Activate();
         }
-        
+
         /// <summary>
         /// Deactivates all charms on this keychain
         /// </summary>
         public void Deactivate()
         {
-            foreach (var charm in charms)
+            foreach (Charm charm in charms)
                 charm?.Deactivate();
         }
-    
+
         /// <summary>
         /// Get all the charms on this keychain
         /// </summary>
@@ -63,7 +63,7 @@
         {
             return charms;
         }
-        
+
         /// <summary>
         /// Get a charm from this keychain.
         /// </summary>
@@ -73,7 +73,7 @@
         {
             return charms[slot];
         }
-        
+
         /// <summary>
         /// Sets a charm for this keychain.
         /// </summary>
@@ -84,8 +84,8 @@
         {
             // Decrement slot number to match array
             slot--;
-            
-            var oldCharm = charms[slot];
+
+            Charm oldCharm = charms[slot];
             charms[slot] = charm;
             return oldCharm;
         }
@@ -108,19 +108,19 @@
 
             return false;
         }
-        
+
         public uint GetCharmSlotCount() => charmSlotCount;
-        
+
         public uint GetSlotsTakenCount()
         {
             uint slotsTaken = 0;
 
-            foreach (var charm in charms)
+            foreach (Charm charm in charms)
             {
                 if (charm != null)
                     slotsTaken++;
             }
-            
+
             return slotsTaken;
         }
     }
