@@ -844,6 +844,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: UI Space
       objectReference: {fileID: 0}
+    - target: {fileID: 5241338361620517908, guid: 8a5289db987ca494eaee5371f5dfe8f0,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 106.683
+      objectReference: {fileID: 0}
+    - target: {fileID: 6000103217990119009, guid: 8a5289db987ca494eaee5371f5dfe8f0,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 193.32
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -992,24 +1002,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerCamera: {fileID: 1958535915}
-  groundCheckObject: {fileID: 1121831094}
-  groundCheckRadius: 0.2
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 1
   parkourWallLayer:
     serializedVersion: 2
     m_Bits: 64
   wallCheckLeft: {fileID: 389202449}
   wallCheckRight: {fileID: 757668559}
+  groundCheck: {fileID: 0}
   gravity: -9.81
   walkSpeed: 4
   runSpeed: 8
   jumpForce: 10
-  slideStartSpeed: 12
+  slideStartVelocity: 12
+  slideEndVelocity: 0
   maxSlideSpeed: 20
   slideCameraYDistance: 0.5
+  slidePenaltyMultiplier: 5
   wallRunSpeed: 8
+  wallCheckDistance: 0.1
+  movementStateString: 
 --- !u!114 &1903752676
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1025,6 +1035,8 @@ MonoBehaviour:
   playerCamera: {fileID: 1958535915}
   mouseSensitivityHorizontal: 0.1
   mouseSensitivityVertical: 0.1
+  XRotationMinClamp: -90
+  XRotationMaxClamp: 90
 --- !u!114 &1903752677
 MonoBehaviour:
   m_ObjectHideFlags: 0

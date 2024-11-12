@@ -21,7 +21,9 @@ namespace Player.States
             firstPersonController = Movement.GetFirstPersonController();
             playerCamera = firstPersonController.GetCamera();
             charController = Movement.Controller;
-            
+
+            Movement.rhythmController.rhythmBarActivated(100f, 100, 3f);
+
             Movement.OnSlideActionReleaseEvent += OnSlideActionReleased;
             
             if (Movement.GetSlideStartSpeed() - Movement.GetCurrentSlidePenalty() > 0.0f)

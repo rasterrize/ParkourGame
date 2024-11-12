@@ -84,7 +84,7 @@ namespace Player
 
         [SerializeField] private string movementStateString;
 
-        private PlayerRhythmController rhythmController;
+        public PlayerRhythmController rhythmController;
 
         private float currentSlidePenalty;
         
@@ -340,7 +340,7 @@ namespace Player
             else if (context.canceled)
                 OnSlideActionReleaseEvent?.Invoke(this, EventArgs.Empty);
             
-            rhythmController?.rhythmBarActivated(100f, 100, 3f);
+            
         }
 
         private void OnLand()
@@ -351,7 +351,7 @@ namespace Player
         public void OnTrickAction(InputAction.CallbackContext context)
         {
             if (context.started)
-                rhythmController?.rhythmBarActivated(300f, 100, 2f);
+                rhythmController?.rhythmBarActivated(300f, 100, 5f);
         }
 
         public void OnJump()

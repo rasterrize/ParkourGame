@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Runtime.InteropServices.WindowsRuntime;
 using TMPro;
 using UnityEngine;
 
@@ -25,10 +26,13 @@ public class PlayerRhythmController : MonoBehaviour
     {
         Mathf.Clamp(playerScore, 0f, 999999f);
         scoreMultiper.text = "x" + multiplerFunction().ToString();
+        
     }
     private void Update()
     {
         updateTimer();
+        
+
     }
     /// <summary>
     /// Detects the distance of the first set of rhythm bars.
@@ -69,10 +73,10 @@ public class PlayerRhythmController : MonoBehaviour
         playerScore += Mathf.RoundToInt(scoreAddition);
         scoreCounter.text = playerScore.ToString();
 
-        scoreMultiper.text = "x" + multiplerFunction().ToString();
+        
 
         // Adding Timer
-        playerTimer += timeBonus * multiplerFunction();
+        playerTimer += timeBonus /** multiplerFunction()*/;
         if (playerTimer < 0) { playerTimer = 0; }
 
 
@@ -80,19 +84,27 @@ public class PlayerRhythmController : MonoBehaviour
 
     void updateTimer()
     {
+        scoreMultiper.text = "x" + multiplerFunction().ToString();
         timerScale = playerTimer / 10;
         if (playerTimer > 0.001f)
         {
-            playerTimer -= Time.deltaTime * multiplerFunction();
+            playerTimer -= Time.deltaTime;
         }
         timerObject.transform.localScale = new Vector3(Mathf.Clamp(timerScale, 0f, 1f), 1, 1);
 
     }
     private int multiplerFunction()
-    {   //  Lower Parameter     Upper Parameter
-        if (timerScale >= 1 && timerScale < 1.5) { return 2; }
-        else if (timerScale >= 1.5 && timerScale < 2) { return 3; }
-        else { return 1; }
+    {
+       
+        //  Lower Parameter     Upper Parameter
+        if (playerTimer < 5) { return 1; }
+        else if (playerTimer >= 7 && playerTimer < 15) { return 2; }
+        else if (playerTimer >= 15 && playerTimer < 20) { return 3; }
+        else if (playerTimer >= 20 && playerTimer < 25) { return 4; }
+        else if (playerTimer >= 25 && playerTimer < 28) { return 6; }
+        else if (playerTimer >= 31 && playerTimer < 35) { return 8; }
+        else { return 10; }
 
+ 
     }
 }
