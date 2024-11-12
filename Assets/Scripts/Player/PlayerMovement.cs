@@ -2,6 +2,7 @@ using System;
 using Player.States;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 namespace Player
 {
@@ -81,10 +82,8 @@ namespace Player
         private MovementState currentMovementState;
 
         public bool WaitUntilFarFromWall { get; set; }
-
-        [SerializeField] private string movementStateString;
-
-        public PlayerRhythmController rhythmController;
+        
+        public PlayerRhythmController RhythmController { get; private set; }
 
         private float currentSlidePenalty;
         
@@ -213,7 +212,7 @@ namespace Player
             if (customGroundCheck != null)
                 useCustomGroundCheck = true;
             
-            rhythmController = GetComponent<PlayerRhythmController>();
+            RhythmController = GetComponent<PlayerRhythmController>();
         }
 
         private void Update()
@@ -228,8 +227,6 @@ namespace Player
 
             if (ShouldHandleGravity)
                 HandleGravity();
-
-            movementStateString = currentMovementState.GetType().ToString();
         }
 
         private void RunGroundedCheck()
@@ -346,12 +343,6 @@ namespace Player
         private void OnLand()
         {
             OnLandEvent?.Invoke(this, EventArgs.Empty);
-        }
-        
-        public void OnTrickAction(InputAction.CallbackContext context)
-        {
-            if (context.started)
-                rhythmController?.rhythmBarActivated(300f, 100, 5f);
         }
 
         public void OnJump()

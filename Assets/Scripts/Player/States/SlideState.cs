@@ -22,7 +22,7 @@ namespace Player.States
             playerCamera = firstPersonController.GetCamera();
             charController = Movement.Controller;
 
-            Movement.rhythmController.rhythmBarActivated(100f, 100, 3f);
+            Movement.RhythmController.rhythmBarActivated(100f, 100, 3f);
 
             Movement.OnSlideActionReleaseEvent += OnSlideActionReleased;
             
